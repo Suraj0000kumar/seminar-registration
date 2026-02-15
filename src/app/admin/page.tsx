@@ -47,7 +47,7 @@ export default function AdminPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter admin password"
-            className="w-full rounded-lg border border-slate-300 px-4 py-2 mb-4"
+            className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2 mb-4"
           />
           <button
             type="submit"
@@ -90,7 +90,7 @@ export default function AdminPage() {
             </a>
             <a
               href="/"
-              className="inline-flex items-center gap-2 border border-slate-300 px-4 py-2 rounded-lg hover:bg-slate-50 text-sm"
+              className="inline-flex items-center gap-2 border border-slate-300 px-4 py-2 rounded-lg hover:bg-slate-50 text-slate-800 text-sm"
             >
               ← Back
             </a>
@@ -165,17 +165,17 @@ export default function AdminPage() {
                       key={p.id}
                       className="border-b border-slate-100 hover:bg-slate-50/50"
                     >
-                      <td className="p-4">{p.fullName}</td>
-                      <td className="p-4">{p.email}</td>
-                      <td className="p-4">{p.phone}</td>
-                      <td className="p-4 capitalize">{p.designation}</td>
-                      <td className="p-4">{p.institution}</td>
-                      <td className="p-4">{p.paperSubmission ? "Yes" : "No"}</td>
-                      <td className="p-4">₹{p.amount}</td>
-                      <td className="p-4 font-mono text-xs">
+                      <td className="p-4 text-slate-800">{p.fullName}</td>
+                      <td className="p-4 text-slate-800">{p.email}</td>
+                      <td className="p-4 text-slate-800">{p.phone}</td>
+                      <td className="p-4 text-slate-800 capitalize">{p.designation}</td>
+                      <td className="p-4 text-slate-800">{p.institution}</td>
+                      <td className="p-4 text-slate-800">{p.paperSubmission ? "Yes" : "No"}</td>
+                      <td className="p-4 text-slate-800">₹{p.amount}</td>
+                      <td className="p-4 text-slate-800 font-mono text-xs">
                         {p.paymentId?.slice(0, 12)}...
                       </td>
-                      <td className="p-4 text-slate-500">
+                      <td className="p-4 text-slate-600">
                         {new Date(p.paidAt).toLocaleDateString()}
                       </td>
                     </tr>

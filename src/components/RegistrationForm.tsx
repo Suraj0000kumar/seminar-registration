@@ -129,7 +129,7 @@ export default function RegistrationForm() {
           required
           value={formData.fullName}
           onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
           placeholder="Enter your full name"
         />
       </div>
@@ -143,7 +143,7 @@ export default function RegistrationForm() {
           required
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
           placeholder="your@email.com"
         />
       </div>
@@ -157,7 +157,7 @@ export default function RegistrationForm() {
           required
           value={formData.phone}
           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
           placeholder="10-digit mobile number"
         />
       </div>
@@ -175,7 +175,7 @@ export default function RegistrationForm() {
               designation: e.target.value as ParticipantType,
             })
           }
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition bg-white"
+          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
         >
           <option value="student">Student (₹250 + ₹1000 for paper)</option>
           <option value="faculty">Faculty (₹350 + ₹1000 for paper)</option>
@@ -194,7 +194,7 @@ export default function RegistrationForm() {
           onChange={(e) =>
             setFormData({ ...formData, institution: e.target.value })
           }
-          className="w-full rounded-lg border border-slate-300 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
           placeholder="Your institution name"
         />
       </div>
