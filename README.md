@@ -127,3 +127,4 @@ npm start
 
 Runs on port 3000. Use a process manager (PM2) and reverse proxy (Nginx) for production.
 # seminar-registration
+# seminar-registration
