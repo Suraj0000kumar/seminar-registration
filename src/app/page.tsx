@@ -66,7 +66,7 @@ export default function Home() {
 
         <footer className="mt-12 text-center text-sm text-slate-500">
           <p>In collaboration with Educational Development Council, Patna</p>
-          <p className="mt-1">Contact: matasushilattc@gmail.com | 9262994128</p>
+          <p className="mt-1">Contact: matasushilattc@gmail.com | 9262994128,9110904930</p>
         </footer>
       </div>
     </div>
