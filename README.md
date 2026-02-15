@@ -1,36 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# National Seminar on Education & Mental Health - Registration Website
 
-## Getting Started
+Registration portal for the National Seminar on **Education & Mental Health: Bridging the Gap** organized by Mata Sushila Institute of Education (22-23 March 2026).
 
-First, run the development server:
+## Features
+
+- **Participant Registration** – Collect name, email, phone, designation, institution
+- **Fee Structure** – Student (₹250), Faculty (₹350), Professional (₹400) + optional paper submission (₹1000)
+- **Razorpay Payment** – Secure online payment integration
+- **Unique QR Code** – Each participant gets a verification QR code after payment
+- **Admin Dashboard** – View all registrations, export to CSV/Excel
+- **Google Sheets Sync** (optional) – Auto-append registrations to a Google Sheet
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment variables
+
+Copy `.env.example` to `.env.local` and fill in:
+
+```bash
+cp .env.example .env.local
+```
+
+**Required for payments:**
+- `RAZORPAY_KEY_ID` – From [Razorpay Dashboard](https://dashboard.razorpay.com/) → Settings → API Keys
+- `RAZORPAY_KEY_SECRET` – Same place
+- `NEXT_PUBLIC_RAZORPAY_KEY_ID` – Same as RAZORPAY_KEY_ID (for frontend)
+
+**Optional:**
+- `NEXT_PUBLIC_ADMIN_PASSWORD` – Password for `/admin` (default: seminar2026)
+- `GOOGLE_SHEET_ID` + `GOOGLE_SHEETS_CREDENTIALS` – For Google Sheets sync
+
+### 3. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Pages
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Page | URL | Description |
+|------|-----|-------------|
+| Registration | `/` | Main registration form |
+| Success | `/success?id=xxx` | QR code and confirmation after payment |
+| Admin | `/admin` | View registrations, export CSV |
 
-## Learn More
+## Google Sheets Setup (Optional)
 
-To learn more about Next.js, take a look at the following resources:
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a project → Enable **Google Sheets API**
+3. Create **Service Account** → Keys → Add key (JSON)
+4. Create a Google Sheet
+5. Share the sheet with the service account email (as Editor)
+6. Add to `.env.local`:
+   - `GOOGLE_SHEET_ID` = ID from sheet URL
+   - `GOOGLE_SHEETS_CREDENTIALS` = contents of the JSON file (as single line)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Add header row in Sheet1:  
+`ID, Full Name, Email, Phone, Designation, Institution, Paper Submission, Amount, Payment ID, Order ID, Paid At, Created At, QR Code`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## QR Code Verification at Event
 
-## Deploy on Vercel
+The QR code contains a JSON payload with participant ID. You can:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Manual** – Use the admin dashboard to search/verify by ID
+2. **Scanner app** – Use any QR scanner; the payload includes the participant ID to verify via `/api/verify-qr` (POST with `{ "id": "uuid" }`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Data Storage
+
+- **Default**: Participants are stored in `data/participants.json`
+- **With Google Sheets**: Each registration is also appended to your sheet
+
+## Deployment (Make it Online)
+
+### Option 1: Vercel (Recommended – Free & Easy)
+
+1. **Push your code to GitHub** (if not already):
+   ```bash
+   git init
+   git add .
+   git commit -m "Initial commit"
+   git branch -M main
+   git remote add origin https://github.com/YOUR_USERNAME/seminar-registration.git
+   git push -u origin main
+   ```
+
+2. **Deploy on Vercel**:
+   - Go to [vercel.com](https://vercel.com) → Sign up / Log in
+   - Click **Add New** → **Project** → Import your GitHub repo
+   - Add **Environment Variables** (from your `.env.local`):
+     - `RAZORPAY_KEY_ID`
+     - `RAZORPAY_KEY_SECRET`
+     - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
+     - `NEXT_PUBLIC_ADMIN_PASSWORD` (optional)
+     - `GOOGLE_SHEET_ID` + `GOOGLE_SHEETS_CREDENTIALS` (recommended for production)
+   - Click **Deploy**
+
+3. **Important for production**: Vercel’s filesystem is temporary. Set up **Google Sheets** (see above) so registrations are saved. Without it, data is lost on each deploy.
+
+4. **Razorpay**: For live payments, switch to **Live** keys in Razorpay Dashboard and update the env vars in Vercel.
+
+---
+
+### Option 2: Railway (Persistent Storage)
+
+1. Go to [railway.app](https://railway.app) → Sign up
+2. **New Project** → **Deploy from GitHub** → Select your repo
+3. Add environment variables (same as above)
+4. Railway provides persistent storage, so `data/participants.json` will persist.
+
+---
+
+### Option 3: Manual (VPS / Your Server)
+
+```bash
+npm run build
+npm start
+```
+
+Runs on port 3000. Use a process manager (PM2) and reverse proxy (Nginx) for production.

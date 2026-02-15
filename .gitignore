@@ -20,6 +20,9 @@
 # production
 /build
 
+# participant data (contains PII)
+/data
+
 # misc
 .DS_Store
 *.pem
