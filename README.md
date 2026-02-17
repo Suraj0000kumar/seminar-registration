@@ -126,7 +126,7 @@ The QR code contains a JSON payload with participant ID. You can:
    - `BLOB_READ_WRITE_TOKEN` (for photo uploads)
    - Click **Deploy**
 
-3. **Important for production**: Vercel’s filesystem is temporary. Set up **Google Sheets** (see above) so registrations are saved. Without it, data is lost on each deploy.
+3. **Important for production**: Vercel’s filesystem is read-only. Google Sheets is required. Set up **Google Sheets** (see above) so registrations are saved. Without it, registration will fail. Google Sheets is required on Vercel.
 
 4. **Razorpay**: For live payments, switch to **Live** keys in Razorpay Dashboard and update the env vars in Vercel.
 
