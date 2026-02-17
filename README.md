@@ -28,13 +28,13 @@ cp .env.example .env.local
 ```
 
 **Required for payments:**
-- `RAZORPAY_KEY_ID` – From [Razorpay Dashboard](https://dashboard.razorpay.com/) → Settings → API Keys
-- `RAZORPAY_KEY_SECRET` – Same place
-- `NEXT_PUBLIC_RAZORPAY_KEY_ID` – Same as RAZORPAY_KEY_ID (for frontend)
+- `RAZORPAY_KEY_ID` – From [Razorpay Dashboard](https://dashboard.razorpay.com/) → Settings → API Keys (Test mode)
+- `RAZORPAY_KEY_SECRET` – Same place (click Generate/Regenerate to see the secret)
+- `NEXT_PUBLIC_RAZORPAY_KEY_ID` – **Must be the same value as RAZORPAY_KEY_ID** (e.g. `rzp_test_xxxx`). Used by the checkout popup. If missing, Razorpay shows "Oops something went wrong".
 
 **Optional:**
 - `NEXT_PUBLIC_ADMIN_PASSWORD` – Password for `/admin` (default: seminar2026)
-- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` – For cloud photo storage (recommended for 1000+ participants)
+- `BLOB_READ_WRITE_TOKEN` – For Vercel Blob photo storage (recommended for 1000+ participants)
 - `GOOGLE_SHEET_ID` + `GOOGLE_SHEETS_CREDENTIALS` – For Google Sheets sync
 
 ### 3. Run the app
@@ -55,35 +55,38 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Cloud Photo Storage (Recommended for 1000+ Participants)
 
-Without cloud storage, photos are stored as base64 in `participants.json`, which becomes very large with many registrations. Use **Cloudflare R2** (S3-compatible, free tier) to store photos and save only URLs.
+Without cloud storage, photos are stored as base64 in `participants.json`, which becomes very large with many registrations.
 
-1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → **R2** → **Create bucket**
-2. Enable **Public access** for the bucket (Settings → Public access → Allow)
-3. Note your **Account ID** (from R2 overview)
-4. Create **API tokens** (R2 → Manage R2 API Tokens → Create API token) – save Access Key ID and Secret
-5. Get your bucket's **public URL** (e.g. `https://pub-xxxxx.r2.dev` from bucket settings, or use a custom domain)
-6. Add to `.env.local`:
-   - `R2_ACCOUNT_ID` = your Cloudflare account ID
-   - `R2_ACCESS_KEY_ID` = from API token
-   - `R2_SECRET_ACCESS_KEY` = from API token
-   - `R2_BUCKET_NAME` = your bucket name
-   - `R2_PUBLIC_URL` = public URL (e.g. `https://pub-xxxxx.r2.dev`)
+1. Go to [Vercel Dashboard](https://vercel.com/dashboard) → **Storage** → **Create Database** → **Blob**
+2. Create a Blob store (or use existing)
+3. Copy the `BLOB_READ_WRITE_TOKEN` from the store settings
+4. Add to `.env.local`:
+   ```
+   BLOB_READ_WRITE_TOKEN=vercel_blob_rw_xxxxx
+   ```
 
-Photos are uploaded to `participants/{id}.jpg`. CSV export and Google Sheets will include the photo URL.
+Works locally and on Vercel.
 
 ## Google Sheets Setup (Optional)
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a project → Enable **Google Sheets API**
-3. Create **Service Account** → Keys → Add key (JSON)
-4. Create a Google Sheet
-5. Share the sheet with the service account email (as Editor)
-6. Add to `.env.local`:
-   - `GOOGLE_SHEET_ID` = ID from sheet URL
-   - `GOOGLE_SHEETS_CREDENTIALS` = contents of the JSON file (as single line)
+2. Create a project → **APIs & Services** → **Enable APIs** → enable **Google Sheets API**
+3. **APIs & Services** → **Credentials** → **Create Credentials** → **Service Account**
+4. Create the service account → **Keys** tab → **Add Key** → **Create new key** → **JSON** (download the file)
+5. Create a Google Sheet (or use existing)
+6. **Share the sheet** with the service account email (found in the JSON as `client_email`, e.g. `xxx@project.iam.gserviceaccount.com`) — give it **Editor** access
+7. Copy the **Sheet ID** from the URL: `https://docs.google.com/spreadsheets/d/SHEET_ID_HERE/edit`
+8. Add to `.env.local`:
+   - `GOOGLE_SHEET_ID` = the Sheet ID (no quotes, no spaces)
+   - `GOOGLE_SHEETS_CREDENTIALS` = the entire JSON file content as a **single line** (minify it: remove newlines, or use a tool like [jsonformatter.org](https://jsonformatter.org/json-minify))
 
-Add header row in Sheet1:  
+Add header row in **Sheet1** (first row):  
 `ID, Full Name, Email, Phone, Gender, Photo, Designation, Institution, Paper Submission, Amount, Payment ID, Order ID, Paid At, Created At, QR Code`
+
+**If sync fails:** Check the terminal/console when a registration completes. Common fixes:
+- **403/Permission denied** → Share the sheet with the service account email (Editor)
+- **404/Not found** → Verify GOOGLE_SHEET_ID matches the ID in your sheet URL
+- **Invalid JSON** → Minify GOOGLE_SHEETS_CREDENTIALS to a single line (no line breaks)
 
 ## QR Code Verification at Event
 
@@ -120,7 +123,7 @@ The QR code contains a JSON payload with participant ID. You can:
      - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
      - `NEXT_PUBLIC_ADMIN_PASSWORD` (optional)
      - `GOOGLE_SHEET_ID` + `GOOGLE_SHEETS_CREDENTIALS` (recommended for production)
-   - `R2_*` variables (recommended for 1000+ participants with photo uploads)
+   - `BLOB_READ_WRITE_TOKEN` (for photo uploads)
    - Click **Deploy**
 
 3. **Important for production**: Vercel’s filesystem is temporary. Set up **Google Sheets** (see above) so registrations are saved. Without it, data is lost on each deploy.

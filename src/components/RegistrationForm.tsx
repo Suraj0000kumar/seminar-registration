@@ -123,15 +123,26 @@ export default function RegistrationForm() {
       }
 
       const { orderId, amount } = await orderRes.json();
+      const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID?.trim();
+      if (!razorpayKey) {
+        throw new Error(
+          "NEXT_PUBLIC_RAZORPAY_KEY_ID is not set. Add it to .env.local (same value as RAZORPAY_KEY_ID) and restart the dev server."
+        );
+      }
       await loadRazorpay();
 
       new window.Razorpay({
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+        key: razorpayKey,
         amount: amount * 100,
         currency: "INR",
         order_id: orderId,
         name: "Mata Sushila Institute of Education",
         description: "National Seminar on Education & Mental Health - Registration",
+        prefill: {
+          name: formData.fullName,
+          email: formData.email,
+          contact: formData.phone.startsWith("+") ? formData.phone : `+91${formData.phone}`,
+        },
         handler: async (response) => {
           const verifyRes = await fetch("/api/order/verify", {
             method: "POST",
@@ -144,7 +155,13 @@ export default function RegistrationForm() {
             }),
           });
 
-          const result = await verifyRes.json();
+          let result: { success?: boolean; participantId?: string; error?: string };
+          try {
+            result = await verifyRes.json();
+          } catch {
+            setError("Server error. Please try again or contact support.");
+            return;
+          }
           if (result.success) {
             window.location.href = `/success?id=${result.participantId}`;
           } else {

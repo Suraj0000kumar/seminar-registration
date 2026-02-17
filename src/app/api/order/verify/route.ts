@@ -12,9 +12,14 @@ function verifyPaymentSignature(
   paymentId: string,
   signature: string
 ): boolean {
+  const secret = process.env.RAZORPAY_KEY_SECRET?.trim();
+  if (!secret) {
+    console.error("RAZORPAY_KEY_SECRET is not set in environment");
+    return false;
+  }
   const body = orderId + "|" + paymentId;
   const expected = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+    .createHmac("sha256", secret)
     .update(body)
     .digest("hex");
   return expected === signature;
@@ -35,9 +40,18 @@ export async function POST(request: NextRequest) {
       formData: Omit<Participant, "id" | "qrCode" | "amount" | "paidAt" | "createdAt">;
     } = body;
 
-    if (!verifyPaymentSignature(orderId, paymentId, signature)) {
+    if (!orderId || !paymentId || !signature) {
+      console.error("Missing payment data:", { orderId: !!orderId, paymentId: !!paymentId, signature: !!signature });
       return NextResponse.json(
-        { error: "Payment verification failed" },
+        { error: "Invalid payment data received" },
+        { status: 400 }
+      );
+    }
+
+    if (!verifyPaymentSignature(orderId, paymentId, signature)) {
+      console.error("Signature verification failed. Check RAZORPAY_KEY_SECRET matches your Razorpay dashboard (Settings → API Keys).");
+      return NextResponse.json(
+        { error: "Payment verification failed. Please ensure RAZORPAY_KEY_SECRET in .env.local matches your Razorpay dashboard." },
         { status: 400 }
       );
     }
@@ -94,8 +108,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Verification error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Payment verification failed" },
+      { error: `Registration failed: ${message}` },
       { status: 500 }
     );
   }
