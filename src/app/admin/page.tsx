@@ -143,6 +143,9 @@ export default function AdminPage() {
                       Gender
                     </th>
                     <th className="text-left p-4 font-medium text-slate-700">
+                      Photo
+                    </th>
+                    <th className="text-left p-4 font-medium text-slate-700">
                       Designation
                     </th>
                     <th className="text-left p-4 font-medium text-slate-700">
@@ -172,6 +175,17 @@ export default function AdminPage() {
                       <td className="p-4 text-slate-800">{p.email}</td>
                       <td className="p-4 text-slate-800">{p.phone}</td>
                       <td className="p-4 text-slate-800 capitalize">{p.gender || "-"}</td>
+                      <td className="p-4">
+                        {p.photoUrl || p.photoBase64 ? (
+                          <img
+                            src={p.photoUrl || p.photoBase64}
+                            alt=""
+                            className="w-12 h-12 rounded-full object-cover border border-slate-200"
+                          />
+                        ) : (
+                          <span className="text-slate-400 text-xs">—</span>
+                        )}
+                      </td>
                       <td className="p-4 text-slate-800 capitalize">{p.designation}</td>
                       <td className="p-4 text-slate-800">{p.institution}</td>
                       <td className="p-4 text-slate-800">{p.paperSubmission ? "Yes" : "No"}</td>

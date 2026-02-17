@@ -26,6 +26,51 @@ interface FormData {
   designation: ParticipantType;
   institution: string;
   paperSubmission: boolean;
+  photoBase64?: string;
+}
+
+const MAX_PHOTO_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_PHOTO_DIM = 400;
+const PHOTO_JPEG_QUALITY = 0.8;
+
+function resizeImageToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (file.size > MAX_PHOTO_SIZE) {
+      reject(new Error("Photo must be under 2MB"));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let { width, height } = img;
+        if (width > MAX_PHOTO_DIM || height > MAX_PHOTO_DIM) {
+          if (width > height) {
+            height = (height / width) * MAX_PHOTO_DIM;
+            width = MAX_PHOTO_DIM;
+          } else {
+            width = (width / height) * MAX_PHOTO_DIM;
+            height = MAX_PHOTO_DIM;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Could not get canvas context"));
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", PHOTO_JPEG_QUALITY);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error("Invalid image file"));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error("Could not read file"));
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function RegistrationForm() {
@@ -217,6 +262,34 @@ export default function RegistrationForm() {
           className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
           placeholder="Your institution name"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">
+          Photo (optional)
+        </label>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) {
+              setFormData((prev) => ({ ...prev, photoBase64: undefined }));
+              return;
+            }
+            try {
+              const base64 = await resizeImageToBase64(file);
+              setFormData((prev) => ({ ...prev, photoBase64: base64 }));
+            } catch (err) {
+              setError(err instanceof Error ? err.message : "Invalid photo");
+              setFormData((prev) => ({ ...prev, photoBase64: undefined }));
+            }
+          }}
+          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+        />
+        {formData.photoBase64 && (
+          <p className="text-xs text-teal-600 mt-1">✓ Photo uploaded (max 2MB, resized if needed)</p>
+        )}
       </div>
 
       <div className="flex items-center gap-3">

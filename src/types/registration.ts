@@ -10,6 +10,8 @@ export interface RegistrationFormData {
   designation: ParticipantType;
   institution: string;
   paperSubmission: boolean;
+  photoBase64?: string;
+  photoUrl?: string;
   paymentId?: string;
   orderId?: string;
 }

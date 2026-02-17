@@ -34,6 +34,7 @@ cp .env.example .env.local
 
 **Optional:**
 - `NEXT_PUBLIC_ADMIN_PASSWORD` – Password for `/admin` (default: seminar2026)
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_PUBLIC_URL` – For cloud photo storage (recommended for 1000+ participants)
 - `GOOGLE_SHEET_ID` + `GOOGLE_SHEETS_CREDENTIALS` – For Google Sheets sync
 
 ### 3. Run the app
@@ -52,6 +53,24 @@ Open [http://localhost:3000](http://localhost:3000).
 | Success | `/success?id=xxx` | QR code and confirmation after payment |
 | Admin | `/admin` | View registrations, export CSV |
 
+## Cloud Photo Storage (Recommended for 1000+ Participants)
+
+Without cloud storage, photos are stored as base64 in `participants.json`, which becomes very large with many registrations. Use **Cloudflare R2** (S3-compatible, free tier) to store photos and save only URLs.
+
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → **R2** → **Create bucket**
+2. Enable **Public access** for the bucket (Settings → Public access → Allow)
+3. Note your **Account ID** (from R2 overview)
+4. Create **API tokens** (R2 → Manage R2 API Tokens → Create API token) – save Access Key ID and Secret
+5. Get your bucket's **public URL** (e.g. `https://pub-xxxxx.r2.dev` from bucket settings, or use a custom domain)
+6. Add to `.env.local`:
+   - `R2_ACCOUNT_ID` = your Cloudflare account ID
+   - `R2_ACCESS_KEY_ID` = from API token
+   - `R2_SECRET_ACCESS_KEY` = from API token
+   - `R2_BUCKET_NAME` = your bucket name
+   - `R2_PUBLIC_URL` = public URL (e.g. `https://pub-xxxxx.r2.dev`)
+
+Photos are uploaded to `participants/{id}.jpg`. CSV export and Google Sheets will include the photo URL.
+
 ## Google Sheets Setup (Optional)
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
@@ -64,7 +83,7 @@ Open [http://localhost:3000](http://localhost:3000).
    - `GOOGLE_SHEETS_CREDENTIALS` = contents of the JSON file (as single line)
 
 Add header row in Sheet1:  
-`ID, Full Name, Email, Phone, Gender, Designation, Institution, Paper Submission, Amount, Payment ID, Order ID, Paid At, Created At, QR Code`
+`ID, Full Name, Email, Phone, Gender, Photo, Designation, Institution, Paper Submission, Amount, Payment ID, Order ID, Paid At, Created At, QR Code`
 
 ## QR Code Verification at Event
 
@@ -101,6 +120,7 @@ The QR code contains a JSON payload with participant ID. You can:
      - `NEXT_PUBLIC_RAZORPAY_KEY_ID`
      - `NEXT_PUBLIC_ADMIN_PASSWORD` (optional)
      - `GOOGLE_SHEET_ID` + `GOOGLE_SHEETS_CREDENTIALS` (recommended for production)
+   - `R2_*` variables (recommended for 1000+ participants with photo uploads)
    - Click **Deploy**
 
 3. **Important for production**: Vercel’s filesystem is temporary. Set up **Google Sheets** (see above) so registrations are saved. Without it, data is lost on each deploy.

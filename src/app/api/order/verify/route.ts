@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 import QRCode from "qrcode";
 import { addParticipant } from "@/lib/participants";
+import { uploadPhotoToCloud, isCloudStorageConfigured } from "@/lib/upload";
 import type { Participant } from "@/types/registration";
 import { FEE_STRUCTURE } from "@/types/registration";
 
@@ -56,6 +57,15 @@ export async function POST(request: NextRequest) {
     const fees = FEE_STRUCTURE[formData.designation as keyof typeof FEE_STRUCTURE];
     const amount = formData.paperSubmission ? fees.base + fees.paper : fees.base;
 
+    let photoUrl: string | undefined;
+    if (formData.photoBase64 && isCloudStorageConfigured()) {
+      try {
+        photoUrl = await uploadPhotoToCloud(participantId, formData.photoBase64);
+      } catch (err) {
+        console.error("Photo upload failed, storing as base64:", err);
+      }
+    }
+
     const participant: Participant = {
       ...formData,
       id: participantId,
@@ -65,6 +75,8 @@ export async function POST(request: NextRequest) {
       orderId,
       paidAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
+      photoUrl: photoUrl || formData.photoUrl,
+      photoBase64: photoUrl ? undefined : formData.photoBase64,
     };
 
     await addParticipant(participant);
