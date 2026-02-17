@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ParticipantType } from "@/types/registration";
+import type { ParticipantType, Gender } from "@/types/registration";
 import { FEE_STRUCTURE } from "@/types/registration";
 
 declare global {
@@ -22,6 +22,7 @@ interface FormData {
   fullName: string;
   email: string;
   phone: string;
+  gender: Gender;
   designation: ParticipantType;
   institution: string;
   paperSubmission: boolean;
@@ -32,6 +33,7 @@ export default function RegistrationForm() {
     fullName: "",
     email: "",
     phone: "",
+    gender: "male",
     designation: "student",
     institution: "",
     paperSubmission: false,
@@ -160,6 +162,24 @@ export default function RegistrationForm() {
           className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
           placeholder="10-digit mobile number"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 mb-1">
+          Gender *
+        </label>
+        <select
+          required
+          value={formData.gender}
+          onChange={(e) =>
+            setFormData({ ...formData, gender: e.target.value as Gender })
+          }
+          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+        >
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
       </div>
 
       <div>

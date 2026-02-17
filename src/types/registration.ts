@@ -1,9 +1,12 @@
 export type ParticipantType = "student" | "faculty" | "professional";
 
+export type Gender = "male" | "female" | "other";
+
 export interface RegistrationFormData {
   fullName: string;
   email: string;
   phone: string;
+  gender?: Gender;
   designation: ParticipantType;
   institution: string;
   paperSubmission: boolean;

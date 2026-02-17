@@ -61,7 +61,7 @@ async function appendToGoogleSheet(participant: Participant): Promise<void> {
   const sheets = google.sheets({ version: "v4", auth });
   await sheets.spreadsheets.values.append({
     spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: "Sheet1!A:O",
+    range: "Sheet1!A:P",
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [
@@ -70,6 +70,7 @@ async function appendToGoogleSheet(participant: Participant): Promise<void> {
           participant.fullName,
           participant.email,
           participant.phone,
+          participant.gender ? String(participant.gender).charAt(0).toUpperCase() + String(participant.gender).slice(1) : "",
           participant.designation,
           participant.institution,
           participant.paperSubmission ? "Yes" : "No",

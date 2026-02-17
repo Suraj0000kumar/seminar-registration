@@ -64,7 +64,7 @@ Open [http://localhost:3000](http://localhost:3000).
    - `GOOGLE_SHEETS_CREDENTIALS` = contents of the JSON file (as single line)
 
 Add header row in Sheet1:  
-`ID, Full Name, Email, Phone, Designation, Institution, Paper Submission, Amount, Payment ID, Order ID, Paid At, Created At, QR Code`
+`ID, Full Name, Email, Phone, Gender, Designation, Institution, Paper Submission, Amount, Payment ID, Order ID, Paid At, Created At, QR Code`
 
 ## QR Code Verification at Event
 
