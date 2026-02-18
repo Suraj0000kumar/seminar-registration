@@ -75,7 +75,7 @@ async function getParticipantsFromSheet(): Promise<Participant[]> {
     const sheets = google.sheets({ version: "v4", auth });
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID!.trim(),
-      range: "Sheet1!A2:O",
+      range: "Sheet1!A2:T",
     });
     const rows = (res.data.values as string[][]) || [];
     return rows.map((row) => ({
@@ -87,13 +87,20 @@ async function getParticipantsFromSheet(): Promise<Participant[]> {
       photoUrl: row[5] && row[5] !== "Yes" && row[5] !== "No" ? row[5] : undefined,
       designation: (row[6]?.toLowerCase() as "student" | "faculty" | "professional") || "student",
       institution: row[7] || "",
+      address: {
+        street: row[9] || "",
+        city: row[10] || "",
+        state: row[11] || "",
+        postalCode: row[12] || "",
+        country: row[13] || "",
+      },
       paperSubmission: row[8] === "Yes",
-      amount: Number(row[9]) || 0,
-      paymentId: row[10] || undefined,
-      orderId: row[11] || undefined,
-      paidAt: row[12] || "",
-      createdAt: row[13] || "",
-      qrCode: row[14] || "",
+      amount: Number(row[14]) || 0,
+      paymentId: row[15] || undefined,
+      orderId: row[16] || undefined,
+      paidAt: row[17] || "",
+      createdAt: row[18] || "",
+      qrCode: row[19] || "",
     }));
   } catch (err) {
     console.error("Failed to read from Google Sheets:", err);
@@ -133,7 +140,7 @@ async function appendToGoogleSheet(participant: Participant): Promise<void> {
   const spreadsheetId = process.env.GOOGLE_SHEET_ID!.trim();
   await sheets.spreadsheets.values.append({
     spreadsheetId,
-    range: "Sheet1!A:Q",
+    range: "Sheet1!A:T",
     valueInputOption: "USER_ENTERED",
     requestBody: {
       values: [
@@ -147,6 +154,11 @@ async function appendToGoogleSheet(participant: Participant): Promise<void> {
           participant.designation,
           participant.institution,
           participant.paperSubmission ? "Yes" : "No",
+          participant.address.street,
+          participant.address.city,
+          participant.address.state,
+          participant.address.postalCode,
+          participant.address.country,
           participant.amount,
           participant.paymentId || "",
           participant.orderId || "",
@@ -157,4 +169,54 @@ async function appendToGoogleSheet(participant: Participant): Promise<void> {
       ],
     },
   });
+}
+export async function deleteParticipant(id: string): Promise<void> {
+  const participants = await getParticipantsFromFile();
+  const filtered = participants.filter((p) => p.id !== id);
+  await saveParticipantsToFile(filtered);
+
+  if (isGoogleSheetsConfigured()) {
+    try {
+      const credentials = JSON.parse(process.env.GOOGLE_SHEETS_CREDENTIALS!.trim());
+      const auth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+      });
+      const sheets = google.sheets({ version: "v4", auth });
+      const spreadsheetId = process.env.GOOGLE_SHEET_ID!.trim();
+      
+      // Get all rows to find the one to delete
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: "Sheet1!A2:A",
+      });
+      
+      const rows = (res.data.values as string[][]) || [];
+      const rowIndex = rows.findIndex((row) => row[0] === id);
+      
+      if (rowIndex !== -1) {
+        // Delete the row (row index + 2 because rows start at 1 and headers are row 1)
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          requestBody: {
+            requests: [
+              {
+                deleteDimension: {
+                  range: {
+                    sheetId: 0,
+                    dimension: "ROWS",
+                    startIndex: rowIndex + 1,
+                    endIndex: rowIndex + 2,
+                  },
+                },
+              },
+            ],
+          },
+        });
+        console.log("Participant deleted from Google Sheets:", id);
+      }
+    } catch (err) {
+      console.error("Failed to delete from Google Sheets:", err);
+    }
+  }
 }

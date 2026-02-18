@@ -8,16 +8,27 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "seminar2026";
 
+  const loadParticipants = async () => {
+    try {
+      const res = await fetch("/api/participants");
+      const data = await res.json();
+      setParticipants(data);
+    } catch (err) {
+      setParticipants([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (authenticated) {
-      fetch("/api/participants")
-        .then((res) => res.json())
-        .then(setParticipants)
-        .catch(() => setParticipants([]))
-        .finally(() => setLoading(false));
+      setLoading(true);
+      loadParticipants();
     }
   }, [authenticated]);
 
@@ -27,6 +38,33 @@ export default function AdminPage() {
       setAuthenticated(true);
     } else {
       alert("Invalid password");
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    setDeleteConfirm(id);
+  };
+
+  const confirmDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      const res = await fetch("/api/participants/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      if (res.ok) {
+        setParticipants((prev) => prev.filter((p) => p.id !== id));
+        setDeleteConfirm(null);
+      } else {
+        const error = await res.json();
+        alert("Error: " + (error.error || "Failed to delete participant"));
+      }
+    } catch (err) {
+      alert("Error deleting participant");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -152,6 +190,9 @@ export default function AdminPage() {
                       Institution
                     </th>
                     <th className="text-left p-4 font-medium text-slate-700">
+                      Address
+                    </th>
+                    <th className="text-left p-4 font-medium text-slate-700">
                       Paper
                     </th>
                     <th className="text-left p-4 font-medium text-slate-700">
@@ -162,6 +203,9 @@ export default function AdminPage() {
                     </th>
                     <th className="text-left p-4 font-medium text-slate-700">
                       Date
+                    </th>
+                    <th className="text-left p-4 font-medium text-slate-700">
+                      Action
                     </th>
                   </tr>
                 </thead>
@@ -188,6 +232,17 @@ export default function AdminPage() {
                       </td>
                       <td className="p-4 text-slate-800 capitalize">{p.designation}</td>
                       <td className="p-4 text-slate-800">{p.institution}</td>
+                      <td className="p-4 text-slate-800 text-xs">
+                        {p.address ? (
+                          <div className="space-y-0.5">
+                            <div>{p.address.street}</div>
+                            <div>{p.address.city}, {p.address.state} {p.address.postalCode}</div>
+                            <div>{p.address.country}</div>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
                       <td className="p-4 text-slate-800">{p.paperSubmission ? "Yes" : "No"}</td>
                       <td className="p-4 text-slate-800">₹{p.amount}</td>
                       <td className="p-4 text-slate-800 font-mono text-xs">
@@ -195,6 +250,32 @@ export default function AdminPage() {
                       </td>
                       <td className="p-4 text-slate-600">
                         {new Date(p.paidAt).toLocaleDateString()}
+                      </td>
+                      <td className="p-4">
+                        {deleteConfirm === p.id ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => confirmDelete(p.id)}
+                              disabled={deletingId === p.id}
+                              className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 disabled:opacity-50"
+                            >
+                              {deletingId === p.id ? "Deleting..." : "Confirm"}
+                            </button>
+                            <button
+                              onClick={() => setDeleteConfirm(null)}
+                              className="px-3 py-1 bg-slate-300 text-slate-800 text-xs rounded hover:bg-slate-400"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleDelete(p.id, p.fullName)}
+                            className="px-3 py-1 bg-red-100 text-red-700 text-xs rounded hover:bg-red-200"
+                          >
+                            Delete
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}

@@ -26,6 +26,13 @@ interface FormData {
   gender: Gender;
   designation: ParticipantType;
   institution: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country: string;
+  };
   paperSubmission: boolean;
   photoBase64?: string;
 }
@@ -82,6 +89,13 @@ export default function RegistrationForm() {
     gender: "male",
     designation: "student",
     institution: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
+    },
     paperSubmission: false,
   });
   const [loading, setLoading] = useState(false);
@@ -260,7 +274,7 @@ export default function RegistrationForm() {
           }
           className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
         >
-          <option value="student">Student (₹250 + ₹1000 for paper)</option>
+          <option value="student">Student (₹250 + ₹500 for paper)</option>
           <option value="faculty">Faculty (₹350 + ₹1000 for paper)</option>
           <option value="professional">Professional/Ph.D (₹400 + ₹1000 for paper)</option>
         </select>
@@ -280,6 +294,107 @@ export default function RegistrationForm() {
           className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
           placeholder="Your institution name"
         />
+      </div>
+
+      <div className="border-t border-slate-200 pt-6">
+        <h3 className="text-lg font-semibold text-slate-800 mb-4">Full Address *</h3>
+        
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Street Address *
+          </label>
+          <input
+            type="text"
+            required
+            value={formData.address.street}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                address: { ...formData.address, street: e.target.value },
+              })
+            }
+            className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+            placeholder="House number, street name"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              City *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.address.city}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  address: { ...formData.address, city: e.target.value },
+                })
+              }
+              className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+              placeholder="City"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              State/Province *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.address.state}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  address: { ...formData.address, state: e.target.value },
+                })
+              }
+              className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+              placeholder="State/Province"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Postal Code *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.address.postalCode}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  address: { ...formData.address, postalCode: e.target.value },
+                })
+              }
+              className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+              placeholder="Postal code"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Country *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.address.country}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  address: { ...formData.address, country: e.target.value },
+                })
+              }
+              className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+              placeholder="Country"
+            />
+          </div>
+        </div>
       </div>
 
       <div>
