@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Participant } from "@/types/registration";
+import QRScanner from "@/components/QRScanner";
 
 export default function AdminPage() {
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -10,6 +11,9 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"registrations" | "check-in">(
+    "registrations"
+  );
 
   const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "seminar2026";
 
@@ -103,58 +107,86 @@ export default function AdminPage() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <h1 className="text-2xl font-bold text-slate-800">
-            Seminar Registrations
+            Seminar Admin Dashboard
           </h1>
-          <div className="flex gap-3">
-            <a
-              href="/api/participants/export"
-              download
-              className="inline-flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 text-sm font-medium"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              Export to CSV
-            </a>
-            <a
-              href="/"
-              className="inline-flex items-center gap-2 border border-slate-300 px-4 py-2 rounded-lg hover:bg-slate-50 text-slate-800 text-sm"
-            >
-              ← Back
-            </a>
-          </div>
+          <a
+            href="/"
+            className="inline-flex items-center gap-2 border border-slate-300 px-4 py-2 rounded-lg hover:bg-slate-50 text-slate-800 text-sm"
+          >
+            ← Back
+          </a>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 shadow">
-            <p className="text-sm text-slate-500">Total Registrations</p>
-            <p className="text-2xl font-bold text-slate-800">
-              {participants.length}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <p className="text-sm text-slate-500">Total Revenue</p>
-            <p className="text-2xl font-bold text-teal-600">
-              ₹{totalRevenue.toLocaleString()}
-            </p>
-          </div>
-          <div className="bg-white rounded-xl p-4 shadow">
-            <p className="text-sm text-slate-500">Paper Submissions</p>
-            <p className="text-2xl font-bold text-slate-800">
-              {participants.filter((p) => p.paperSubmission).length}
-            </p>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-slate-200">
+          <button
+            onClick={() => setActiveTab("registrations")}
+            className={`px-4 py-3 font-medium transition-colors ${
+              activeTab === "registrations"
+                ? "text-teal-600 border-b-2 border-teal-600"
+                : "text-slate-600 hover:text-slate-800"
+            }`}
+          >
+            Registrations
+          </button>
+          <button
+            onClick={() => setActiveTab("check-in")}
+            className={`px-4 py-3 font-medium transition-colors ${
+              activeTab === "check-in"
+                ? "text-teal-600 border-b-2 border-teal-600"
+                : "text-slate-600 hover:text-slate-800"
+            }`}
+          >
+            Entry Check-In
+          </button>
         </div>
+
+        {/* Registrations Tab */}
+        {activeTab === "registrations" && (
+          <>
+            <div className="flex gap-3 mb-8">
+              <a
+                href="/api/participants/export"
+                download
+                className="inline-flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 text-sm font-medium"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Export to CSV
+              </a>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white rounded-xl p-4 shadow">
+                <p className="text-sm text-slate-500">Total Registrations</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {participants.length}
+                </p>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow">
+                <p className="text-sm text-slate-500">Total Revenue</p>
+                <p className="text-2xl font-bold text-teal-600">
+                  ₹{totalRevenue.toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-white rounded-xl p-4 shadow">
+                <p className="text-sm text-slate-500">Paper Submissions</p>
+                <p className="text-2xl font-bold text-slate-800">
+                  {participants.filter((p) => p.paperSubmission).length}
+                </p>
+              </div>
+            </div>
 
         <div className="bg-white rounded-xl shadow overflow-hidden">
           {loading ? (
@@ -284,6 +316,13 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+          </>
+        )}
+
+        {/* Check-In Tab */}
+        {activeTab === "check-in" && (
+          <QRScanner />
+        )}
       </div>
     </div>
   );

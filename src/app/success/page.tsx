@@ -55,6 +55,15 @@ function SuccessContent() {
     );
   }
 
+  const downloadQRCode = () => {
+    const link = document.createElement("a");
+    link.href = participant.qrCode;
+    link.download = `${participant.fullName.replace(/\s+/g, "_")}_event_pass_qr.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-teal-50/30 to-slate-100 py-12 px-4">
       <div className="max-w-md mx-auto">
@@ -94,6 +103,27 @@ function SuccessContent() {
                 alt="Registration QR Code"
                 className="w-48 h-48"
               />
+            </div>
+            <div className="mt-6 flex gap-3 justify-center">
+              <button
+                onClick={downloadQRCode}
+                className="inline-flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 text-sm font-medium transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                  />
+                </svg>
+                Download Your Entry Ticket
+              </button>
             </div>
             <p className="text-xs text-slate-500 mt-4">
               Save or screenshot this page for easy access

@@ -19,7 +19,7 @@ async function getParticipantsFromFile(): Promise<Participant[]> {
   }
 }
 
-async function saveParticipantsToFile(participants: Participant[]): Promise<boolean> {
+export async function saveParticipantsToFile(participants: Participant[]): Promise<boolean> {
   try {
     const fs = await import("fs/promises");
     const path = await import("path");

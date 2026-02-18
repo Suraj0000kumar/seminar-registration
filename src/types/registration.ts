@@ -31,6 +31,7 @@ export interface Participant extends RegistrationFormData {
   amount: number;
   paidAt: string;
   createdAt: string;
+  checkedInAt?: string; // Timestamp when participant checked in at venue
 }
 
 export const FEE_STRUCTURE = {
