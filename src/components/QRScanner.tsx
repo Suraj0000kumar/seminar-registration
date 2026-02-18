@@ -27,66 +27,97 @@ export default function QRScanner() {
 
   const startScanning = () => {
     if (!containerRef.current) return;
+    if (scannerRef.current) return; // already running
 
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      {
-        fps: 10,
-        aspectRatio: 1.0,
-        disableFlip: false,
-      },
-      false
-    );
+    try {
+      const scanner = new Html5QrcodeScanner(
+        "qr-reader",
+        {
+          fps: 10,
+          aspectRatio: 1.0,
+          disableFlip: false,
+        },
+        false
+      );
 
-    scanner.render(
-      async (decodedText) => {
-        try {
-          setLoading(true);
-          const qrData = JSON.parse(decodedText);
-          const participantId = qrData.id;
+      scanner.render(
+        async (decodedText) => {
+          try {
+            setLoading(true);
+            let qrData: any;
+            try {
+              qrData = JSON.parse(decodedText);
+            } catch (e) {
+              // If QR payload isn't JSON, show helpful message
+              setResult({ valid: false, message: "Unrecognized QR payload" });
+              return;
+            }
 
-          const res = await fetch("/api/check-in", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: participantId }),
-          });
+            const participantId = qrData?.id;
+            if (!participantId) {
+              setResult({ valid: false, message: "QR does not contain participant id" });
+              return;
+            }
 
-          const data = await res.json();
-          setResult(data);
+            const res = await fetch("/api/check-in", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: participantId }),
+            });
 
-          // Reload stats
-          const statsRes = await fetch("/api/participants");
-          const participants = await statsRes.json();
-          setStats({
-            total: participants.length,
-            checkedIn: participants.filter(
-              (p: any) => p.checkedInAt
-            ).length,
-          });
-        } catch (err) {
-          setResult({
-            valid: false,
-            message: "Invalid QR code format",
-          });
-        } finally {
-          setLoading(false);
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({ message: 'Check-in failed' }));
+              setResult({ valid: false, message: err.message || 'Check-in failed' });
+            } else {
+              const data = await res.json();
+              setResult(data);
+
+              // Reload stats
+              const statsRes = await fetch("/api/participants");
+              const participants = await statsRes.json();
+              setStats({
+                total: participants.length,
+                checkedIn: participants.filter((p: any) => p.checkedInAt).length,
+              });
+            }
+          } catch (err) {
+            console.error('QR handler error', err);
+            setResult({ valid: false, message: "Invalid QR code format" });
+          } finally {
+            setLoading(false);
+          }
+        },
+        (error) => {
+          // show less noisy errors to UI
+          console.warn("QR scan error:", error);
         }
-      },
-      (error) => {
-        console.warn("QR scan error:", error);
-      }
-    );
+      );
 
-    scannerRef.current = scanner;
-    setScanning(true);
+      scannerRef.current = scanner;
+      setScanning(true);
+    } catch (err: any) {
+      console.error('Failed to start scanner', err);
+      setResult({ valid: false, message: 'Unable to access camera or start scanner' });
+    }
   };
 
   const stopScanning = () => {
     if (scannerRef.current) {
-      scannerRef.current.clear();
-      scannerRef.current = null;
+      // clear() returns a promise - await it to ensure camera is released
+      scannerRef.current
+        .clear()
+        .then(() => {
+          scannerRef.current = null;
+          setScanning(false);
+        })
+        .catch((err) => {
+          console.warn('Failed to clear scanner:', err);
+          scannerRef.current = null;
+          setScanning(false);
+        });
+    } else {
+      setScanning(false);
     }
-    setScanning(false);
   };
 
   useEffect(() => {
