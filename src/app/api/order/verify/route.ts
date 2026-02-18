@@ -80,9 +80,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const displayName = formData.prefix ? `${formData.prefix} ${formData.fullName}` : formData.fullName;
+
     const participant: Participant = {
       ...formData,
       id: participantId,
+      fullName: displayName,
       qrCode: qrCodeDataUrl,
       amount,
       paymentId,

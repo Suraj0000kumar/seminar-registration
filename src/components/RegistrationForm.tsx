@@ -20,6 +20,7 @@ declare global {
 }
 
 interface FormData {
+  prefix?: string;
   fullName: string;
   email: string;
   phone: string;
@@ -83,6 +84,7 @@ function resizeImageToBase64(file: File): Promise<string> {
 
 export default function RegistrationForm() {
   const [formData, setFormData] = useState<FormData>({
+    prefix: "",
     fullName: "",
     email: "",
     phone: "",
@@ -201,16 +203,31 @@ export default function RegistrationForm() {
 
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">
-          Full Name *
+          Prefix & Full Name *
         </label>
-        <input
-          type="text"
-          required
-          value={formData.fullName}
-          onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-          className="w-full rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
-          placeholder="Enter your full name"
-        />
+        <div className="flex gap-3">
+          <select
+            required
+            value={formData.prefix}
+            onChange={(e) => setFormData({ ...formData, prefix: e.target.value })}
+            className="w-28 rounded-lg border border-slate-300 bg-white text-slate-900 px-3 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+          >
+            <option value="" disabled>
+              Select
+            </option>
+            <option value="Mr.">Mr.</option>
+            <option value="Mrs.">Mrs.</option>
+            <option value="Ms.">Ms.</option>
+          </select>
+          <input
+            type="text"
+            required
+            value={formData.fullName}
+            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+            className="flex-1 rounded-lg border border-slate-300 bg-white text-slate-900 px-4 py-2.5 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition"
+            placeholder="Enter your full name"
+          />
+        </div>
       </div>
 
       <div>

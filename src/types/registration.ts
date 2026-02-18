@@ -11,6 +11,8 @@ export interface Address {
 }
 
 export interface RegistrationFormData {
+  // Optional honorific/prefix (e.g., Mr., Mrs., Dr.)
+  prefix?: string;
   fullName: string;
   email: string;
   phone: string;
